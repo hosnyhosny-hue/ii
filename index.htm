@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>لعبة اختبار – رسل الله تعالى (20 سؤال)</title>
+
+<style>
+  body{
+    margin:0;
+    font-family: Tahoma, Arial, sans-serif;
+    background: linear-gradient(#eef7ff,#ffffff);
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    padding:16px;
+  }
+  .container{
+    width: min(900px, 95%);
+    background:#fff;
+    border-radius:20px;
+    box-shadow:0 10px 25px rgba(0,0,0,.10);
+    padding:20px;
+  }
+  h1{ text-align:center; color:#2f80ed; margin:0 0 10px; }
+  .sub{ text-align:center; color:#5b6b7a; font-weight:700; margin:0 0 14px; }
+  label{ font-weight:900; display:block; margin:10px 0 8px; }
+  input{
+    width:100%;
+    padding:14px;
+    font-size:18px;
+    border-radius:14px;
+    border:2px solid #2f80ed;
+    background:#f7fbff;
+    font-weight:900;
+    outline:none;
+  }
+  button{
+    width:100%;
+    padding:14px;
+    margin-top:10px;
+    font-size:18px;
+    font-weight:900;
+    border-radius:14px;
+    border:none;
+    cursor:pointer;
+    position:relative;
+    text-align:right;
+  }
+  .primary{ background:#2f80ed; color:#fff; }
+  .choice{
+    background:#f1f6ff;
+    border:2px solid #2f80ed;
+    color:#1b2a3a;
+  }
+  .choice:hover{ background:#dbe9ff; }
+
+  .choice.correct{
+    background:#d4f7dc !important;
+    border-color:#27ae60 !important;
+    box-shadow: 0 0 0 4px rgba(39,174,96,.12);
+  }
+  .choice.correct::after{
+    content:"✔";
+    position:absolute;
+    left:14px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:22px;
+    color:#1f7a46;
+  }
+
+  .choice.wrong{
+    background:#ffdede !important;
+    border-color:#eb5757 !important;
+    box-shadow: 0 0 0 4px rgba(235,87,87,.10);
+  }
+  .choice.wrong::after{
+    content:"✖";
+    position:absolute;
+    left:14px;
+    top:50%;
+    transform:translateY(-50%);
+    font-size:22px;
+    color:#b13232;
+  }
+
+  .hidden{ display:none; }
+
+  .lesson{
+    display:inline-block;
+    background:#e9f6ee;
+    color:#219653;
+    padding:8px 12px;
+    border-radius:999px;
+    font-weight:900;
+  }
+  .toprow{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+    flex-wrap:wrap;
+  }
+  .progress{
+    height:12px;
+    background:#e0ecff;
+    border-radius:10px;
+    overflow:hidden;
+    width: 260px;
+  }
+  .bar{ height:100%; width:0%; background:#2f80ed; transition:width .25s ease; }
+
+  .footer{
+    margin-top:14px;
+    font-weight:900;
+    display:flex;
+    justify-content:space-between;
+    gap:10px;
+    flex-wrap:wrap;
+    color:#1b2a3a;
+  }
+  .resultBox{
+    margin-top:14px;
+    padding:14px;
+    border-radius:16px;
+    background:#f7fbff;
+    border:1px solid rgba(47,128,237,.18);
+    font-weight:900;
+    line-height:1.8;
+  }
+  .big{ font-size:22px; color:#2f80ed; }
+  .note{
+    margin-top:10px;
+    color:#5b6b7a;
+    font-weight:800;
+    font-size:13px;
+    line-height:1.6;
+  }
+  .ok{ color:#219653; }
+  .warn{ color:#b13232; }
+</style>
+</head>
+
+<body>
+<div class="container">
+
+  <!-- البداية -->
+  <div id="startScreen">
+    <h1>لعبة اختبار: رسل الله تعالى</h1>
+    <p class="sub">20 سؤالًا • اكتب اسمك ثم ابدأ</p>
+
+    <label for="studentName">اسم الطالب/ـة</label>
+    <input id="studentName" placeholder="مثال: حسني" autocomplete="off" />
+
+    <button class="primary" id="startBtn" type="button">ابدأ اللعبة 🚀</button>
+  </div>
+
+  <!-- الأسئلة -->
+  <div id="quizScreen" class="hidden">
+    <div class="toprow">
+      <div class="lesson" id="lesson"></div>
+      <div>
+        <div id="counter" style="font-weight:900;color:#5b6b7a"></div>
+        <div class="progress"><div class="bar" id="bar"></div></div>
+      </div>
+    </div>
+
+    <h2 id="question" style="margin:10px 0 12px;line-height:1.5;"></h2>
+    <div id="choices"></div>
+
+    <div class="footer">
+      <div>الاسم: <span id="nameView"></span></div>
+      <div>الدرجة: <span id="scoreView">0</span>/20</div>
+    </div>
+  </div>
+
+  <!-- التسليم والنتيجة -->
+  <div id="submitScreen" class="hidden">
+    <h1>✅ انتهت الأسئلة</h1>
+    <p class="sub">اضغط Submit لإظهار نتيجتك (وسيتم حفظها في Google Form بدون فتحه)</p>
+
+    <button class="primary" id="submitBtn" type="button">Submit (تسليم)</button>
+
+    <div id="resultBox" class="resultBox hidden">
+      <div class="big" id="finalMsg">—</div>
+      <div>الطالب/ـة: <span id="finalName">—</span></div>
+      <div>علامتك: <span id="finalScore">0</span> من 20</div>
+      <div class="note" id="saveStatus">—</div>
+    </div>
+
+    <button id="playAgainBtn" type="button">إعادة اللعب 🔁</button>
+  </div>
+
+</div>
+
+<script>
+/* ===== إعداد Google Form (بدون تحويل) =====
+   مهم: نستخدم formResponse بدل viewform
+*/
+const FORM_RESPONSE_URL =
+"https://docs.google.com/forms/d/e/1FAIpQLSexihBtPhJ4gWknpKMtnGZ_vaD7iNRRyWAgwJOAcNvtLTHZ0Q/formResponse";
+
+const ENTRY_NAME  = "entry.286259";
+const ENTRY_SCORE = "entry.626618781";
+
+/* ===== مؤثرات صوتية ===== */
+const AudioCtx = window.AudioContext || window.webkitAudioContext;
+let audioCtx = null;
+
+function ensureAudio(){
+  if(!audioCtx) audioCtx = new AudioCtx();
+  if(audioCtx.state === "suspended") audioCtx.resume();
+}
+function tone(freq, dur=0.18, type="sine", gain=0.05){
+  ensureAudio();
+  const o = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  o.type = type;
+  o.frequency.setValueAtTime(freq, audioCtx.currentTime);
+  g.gain.value = gain;
+  o.connect(g); g.connect(audioCtx.destination);
+  o.start();
+  o.stop(audioCtx.currentTime + dur);
+}
+function playCorrect(){
+  tone(700,.10,"triangle",0.05);
+  setTimeout(()=>tone(950,.12,"triangle",0.05),90);
+  setTimeout(()=>tone(1200,.14,"triangle",0.05),190);
+}
+function playWrong(){
+  tone(260,.12,"sine",0.05);
+  setTimeout(()=>tone(180,.14,"sine",0.05),120);
+}
+
+/* ===== الأسئلة (20) ===== */
+const questions = [
+  {lesson:"أركان الإيمان", q:"كم عدد أركان الإيمان؟", c:["4","5","6","7"], a:2},
+  {lesson:"أركان الإيمان", q:"أيّ مما يلي يُعدّ من أركان الإيمان؟", c:["الإيمان بالرسل","الإيمان بالأصدقاء","الإيمان بالطعام","الإيمان بالألعاب"], a:0},
+  {lesson:"الآية الكريمة", q:"ماذا تقول الآية عن الرسل؟", c:["نفرّق بين بعضهم","لا نفرّق بين أحد من رسله","نؤمن ببعضهم فقط","لا نؤمن بهم"], a:1},
+
+  {lesson:"من هم الرسل؟", q:"الرسل رجال يتصفون بـ…", c:["الكسل","الصدق والأمانة في تبليغ الرسالة","الخوف من الناس","حب اللعب فقط"], a:1},
+  {lesson:"من هم الرسل؟", q:"الرسل هم…", c:["أقل الناس أخلاقًا","أفضل البشر وأكمل الناس أخلاقًا","أغنى الناس","أقوى الناس جسمًا"], a:1},
+  {lesson:"من هم الرسل؟", q:"لماذا اختار الله تعالى الرسل؟", c:["لجمع المال","لحمل رسالاته إلى الناس","للسفر فقط","للتنافس"], a:1},
+
+  {lesson:"حكم الإيمان بالرسل", q:"الإيمان بالرسل هو…", c:["أمر اختياري","ممنوع","ركن من أركان الإيمان","لا علاقة له بالإيمان"], a:2},
+  {lesson:"حكم الإيمان بالرسل", q:"لماذا يجب على المسلم الإيمان بالرسل جميعًا؟", c:["لأن الإيمان بهم ركن من أركان الإيمان","لأنهم يعيشون بيننا دائمًا","لأنهم أغنياء","لأنهم أقاربنا"], a:0},
+
+  {lesson:"مهام الرسل", q:"المهمة الأولى للرسل هي…", c:["تعليم الرياضة","الدعوة إلى توحيد الله تعالى","بيع وشراء","السفر للتسلية"], a:1},
+  {lesson:"مهام الرسل", q:"المهمة الثانية للرسل هي…", c:["تعليم الناس أمور دينهم","جمع الأموال","بناء القلاع","تعليم الرسم فقط"], a:0},
+  {lesson:"مهام الرسل", q:"إذا التزمنا بمنهج الله نعيش في…", c:["سعادة ومحبة وسلام","خوف وقلق دائم","كسل وتعب","خصام دائم"], a:0},
+
+  {lesson:"المعجزة", q:"المعجزة هي…", c:["شيء يفوق قدرة البشر","لعبة عادية","حكاية بلا معنى","شيء يستطيع أي شخص فعله"], a:0},
+  {lesson:"المعجزة", q:"لا يستطيع أحد أن يفعل المعجزة إلا…", c:["بقوة عضلاته","بأمر من الله تعالى","بالمال","بالذكاء فقط"], a:1},
+  {lesson:"المعجزة", q:"جعل الله لكل رسول معجزة لـ…", c:["ليصدقه قومه ويؤمنوا برسالته","ليتفاخر بها","ليجمع بها المال","ليخيف الأطفال"], a:0},
+
+  {lesson:"بعض معجزات الرسل", q:"ما معجزة نبي الله صالح؟", c:["الناقة التي خرجت من الصخرة","شق البحر","إبراء الأكمه والأبرص","نزول القرآن"], a:0},
+  {lesson:"بعض معجزات الرسل", q:"من معجزة نبي الله موسى…", c:["تحول العصا إلى حية تسعى","الناقة من الصخرة","إحياء الموتى","القرآن الكريم"], a:0},
+  {lesson:"بعض معجزات الرسل", q:"ذكر الدرس أن من معجزات موسى أيضًا…", c:["شق البحر","إخراج الناقة","نزول القرآن","إبراء الأعمى"], a:0},
+
+  {lesson:"بعض معجزات الرسل", q:"من معجزات عيسى ابن مريم…", c:["يبرئ الأبرص والأعمى بإذن الله","تحول العصا إلى حية","الناقة من الصخرة","شق البحر"], a:0},
+
+  {lesson:"معجزة نبينا محمد ﷺ", q:"المعجزة الباقية إلى يوم القيامة هي…", c:["القرآن الكريم","الناقة","تحول العصا","إبراء الأعمى"], a:0},
+  {lesson:"واجب المسلم تجاه الرسل", q:"من واجب المسلم تجاه الرسل…", c:["الإيمان بجميع الرسل ورسالاتهم ولا يفرّق بينهم","عدم الإيمان بهم","السخرية منهم","الإيمان برسول واحد فقط"], a:0}
+];
+
+const TOTAL = questions.length;
+
+/* ===== عناصر ===== */
+const startScreen  = document.getElementById("startScreen");
+const quizScreen   = document.getElementById("quizScreen");
+const submitScreen = document.getElementById("submitScreen");
+
+const studentNameInput = document.getElementById("studentName");
+const startBtn = document.getElementById("startBtn");
+
+const lessonEl = document.getElementById("lesson");
+const counterEl = document.getElementById("counter");
+const barEl = document.getElementById("bar");
+const questionEl = document.getElementById("question");
+const choicesEl = document.getElementById("choices");
+
+const nameView = document.getElementById("nameView");
+const scoreView = document.getElementById("scoreView");
+
+const submitBtn = document.getElementById("submitBtn");
+const resultBox = document.getElementById("resultBox");
+const finalMsg  = document.getElementById("finalMsg");
+const finalName = document.getElementById("finalName");
+const finalScore= document.getElementById("finalScore");
+const saveStatus= document.getElementById("saveStatus");
+const playAgainBtn = document.getElementById("playAgainBtn");
+
+/* ===== حالة ===== */
+let index = 0;
+let score = 0;
+let studentName = "";
+
+/* ===== أدوات ===== */
+function show(el){ el.classList.remove("hidden"); }
+function hide(el){ el.classList.add("hidden"); }
+
+function startGame(){
+  const name = (studentNameInput.value || "").trim();
+  if (!name){
+    alert("من فضلك اكتب اسمك أولًا 🙂");
+    studentNameInput.focus();
+    return;
+  }
+  studentName = name;
+  nameView.textContent = studentName;
+
+  index = 0;
+  score = 0;
+  scoreView.textContent = score;
+
+  hide(startScreen);
+  show(quizScreen);
+  renderQuestion();
+}
+
+function renderQuestion(){
+  const q = questions[index];
+  lessonEl.textContent = q.lesson;
+  counterEl.textContent = `سؤال ${index+1} من ${TOTAL}`;
+  barEl.style.width = `${(index/TOTAL)*100}%`;
+
+  questionEl.textContent = q.q;
+  choicesEl.innerHTML = "";
+
+  q.c.forEach((txt, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "choice";
+    b.textContent = txt;
+
+    b.onclick = () => {
+      if (i === q.a){
+        b.classList.add("correct");
+        score++;
+        scoreView.textContent = score;
+        playCorrect();
+      } else {
+        b.classList.add("wrong");
+        playWrong();
+      }
+
+      [...choicesEl.querySelectorAll("button")].forEach(btn => btn.disabled = true);
+
+      setTimeout(() => {
+        index++;
+        if (index >= TOTAL){
+          hide(quizScreen);
+          show(submitScreen);
+        } else {
+          renderQuestion();
+        }
+      }, 450);
+    };
+
+    choicesEl.appendChild(b);
+  });
+}
+
+async function submitToGoogleFormSilently(){
+  // إرسال في الخلفية (بدون فتح أي صفحة)
+  const formData = new FormData();
+  formData.append(ENTRY_NAME, studentName);
+  formData.append(ENTRY_SCORE, String(score));
+
+  // mode:no-cors يجعل المتصفح يرسل الطلب حتى لو لا يمكن قراءة الاستجابة
+  await fetch(FORM_RESPONSE_URL, {
+    method: "POST",
+    mode: "no-cors",
+    body: formData
+  });
+}
+
+async function onSubmit(){
+  // عرض النتيجة داخل اللعبة
+  finalName.textContent = studentName;
+  finalScore.textContent = String(score);
+
+  if (score > 10){
+    finalMsg.textContent = "أحسنت 👏";
+  } else {
+    finalMsg.textContent = "حاول مرة أخرى لتحسين علامتك 💪";
+  }
+
+  resultBox.classList.remove("hidden");
+  saveStatus.innerHTML = "⏳ جارٍ حفظ النتيجة…";
+
+  try{
+    await submitToGoogleFormSilently();
+    saveStatus.innerHTML = "<span class='ok'>✅ تم حفظ النتيجة في Google Form بدون فتحه.</span>";
+  }catch(e){
+    // في حال منع CORS/فتح محلي
+    saveStatus.innerHTML =
+      "<span class='warn'>⚠️ لم أستطع التأكد من الحفظ (قد يكون بسبب فتح الملف محليًا). افتحه عبر Live Server أو استضافة.</span>";
+  }
+}
+
+/* ===== أحداث ===== */
+startBtn.addEventListener("click", startGame);
+studentNameInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") startGame();
+});
+submitBtn.addEventListener("click", onSubmit);
+playAgainBtn.addEventListener("click", () => location.reload());
+</script>
+
+</body>
+</html>
